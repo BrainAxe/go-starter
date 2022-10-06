@@ -2,7 +2,6 @@ package main
 
 import (
 	"go-starter/src/dao"
-	"go-starter/src/model"
 	"go-starter/src/routes"
 
 	"github.com/joho/godotenv"
@@ -22,8 +21,6 @@ func main() {
 	}
 	//The program exits and closes the database connection
 	defer dao.Close()
-	//Binding model
-	dao.SqlSession.AutoMigrate(&model.User{})
 	//Register routing
 	r := routes.SetRouter()
 	//Start the project with port 8000

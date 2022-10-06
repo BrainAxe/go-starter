@@ -2,8 +2,8 @@ package controller
 
 import (
 	"fmt"
+	"go-starter/src/dao"
 	"go-starter/src/helper"
-	"go-starter/src/service"
 	"net/http"
 	"os"
 
@@ -13,7 +13,7 @@ import (
 	"gopkg.in/validator.v2"
 )
 
-//  user login
+// user login
 func LoginController(c *gin.Context) {
 	authCred := struct {
 		Username string `json:"username" binding:"required"`
@@ -29,10 +29,15 @@ func LoginController(c *gin.Context) {
 			"error": err.Error(),
 		})
 	} else {
-		user, err := service.AuthenticateUser(authCred.Username, authCred.Password)
+		user, err := dao.SqlSession.GetUserByUsername(c, authCred.Username)
 
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no user found"})
+			return
+		}
+
+		if match := helper.CheckPasswordHash(authCred.Password, user.Password); !match {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "password doesn't match!"})
 			return
 		}
 
@@ -71,11 +76,6 @@ func RefreshTokenController(c *gin.Context) {
 		return
 	}
 
-	//is token valid?
-	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
-		c.JSON(http.StatusUnauthorized, err)
-		return
-	}
 	//Since token is valid, get the username
 	claims, ok := token.Claims.(jwt.MapClaims) //the token claims should conform to MapClaims
 	if ok && token.Valid {
