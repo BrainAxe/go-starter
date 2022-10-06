@@ -17,8 +17,8 @@ func SetRouter() *gin.Engine {
 
 		userGroup.POST("/registration", controller.CreateUser)
 		userGroup.GET("/users", middleware.TokenAuthMiddleware(), controller.GetUserList)
-		userGroup.PUT("/users/:id", controller.UpdateUser)
-		userGroup.DELETE("/users/:id", controller.DeleteUserById)
+		userGroup.PUT("/users/:id", middleware.TokenAuthMiddleware(), controller.UpdateUser)
+		userGroup.DELETE("/users/:id", middleware.TokenAuthMiddleware(), controller.DeleteUserById)
 
 	}
 	return r
